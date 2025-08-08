@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -17,6 +19,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState("content");
+  const [editingDestination, setEditingDestination] = useState<any>(null);
+  const [showAddDestination, setShowAddDestination] = useState(false);
+  const [newDestination, setNewDestination] = useState({
+    name: "",
+    type: "domestic" as "domestic" | "international",
+    imageUrl: "",
+    formUrl: "",
+    icon: ""
+  });
 
   const { data: content = {} } = useQuery<Record<string, string>>({
     queryKey: ["/api/content"],
@@ -57,6 +68,51 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     },
   });
 
+  const addDestinationMutation = useMutation({
+    mutationFn: (destination: typeof newDestination) =>
+      apiRequest("POST", "/api/admin/destinations", destination),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Destination added successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/destinations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/domestic"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/international"] });
+      setShowAddDestination(false);
+      setNewDestination({ name: "", type: "domestic", imageUrl: "", formUrl: "", icon: "" });
+    },
+  });
+
+  const updateDestinationMutation = useMutation({
+    mutationFn: (destination: any) =>
+      apiRequest("PUT", `/api/admin/destinations/${destination.id}`, destination),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Destination updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/destinations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/domestic"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/international"] });
+      setEditingDestination(null);
+    },
+  });
+
+  const deleteDestinationMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequest("DELETE", `/api/admin/destinations/${id}`),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Destination deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/destinations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/domestic"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/destinations/international"] });
+    },
+  });
+
   const handleSaveContent = () => {
     const formData = new FormData(document.getElementById("contentForm") as HTMLFormElement);
     const updates: { key: string; value: string }[] = [];
@@ -70,6 +126,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const handleLogout = () => {
     logoutMutation.mutate();
+  };
+
+  const handleAddDestination = () => {
+    addDestinationMutation.mutate(newDestination);
+  };
+
+  const handleUpdateDestination = () => {
+    if (editingDestination) {
+      updateDestinationMutation.mutate(editingDestination);
+    }
+  };
+
+  const handleDeleteDestination = (id: string) => {
+    if (confirm("Are you sure you want to delete this destination?")) {
+      deleteDestinationMutation.mutate(id);
+    }
   };
 
   return (
@@ -277,10 +349,91 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <div className="admin-content">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="font-poppins text-2xl font-semibold">Destinations Management</h2>
-                  <Button className="btn-primary-ttrave" data-testid="add-destination-button">
-                    <i className="bi bi-plus-circle me-2"></i>
-                    Add New Destination
-                  </Button>
+                  <Dialog open={showAddDestination} onOpenChange={setShowAddDestination}>
+                    <DialogTrigger asChild>
+                      <Button className="btn-primary-ttrave" data-testid="add-destination-button">
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Add New Destination
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Add New Destination</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="new-name">Name</Label>
+                          <Input
+                            id="new-name"
+                            value={newDestination.name}
+                            onChange={(e) => setNewDestination({...newDestination, name: e.target.value})}
+                            placeholder="Enter destination name"
+                            data-testid="add-destination-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="new-type">Type</Label>
+                          <Select value={newDestination.type} onValueChange={(value: "domestic" | "international") => setNewDestination({...newDestination, type: value})}>
+                            <SelectTrigger data-testid="add-destination-type">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="domestic">Domestic</SelectItem>
+                              <SelectItem value="international">International</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="new-imageUrl">Image URL</Label>
+                          <Input
+                            id="new-imageUrl"
+                            value={newDestination.imageUrl}
+                            onChange={(e) => setNewDestination({...newDestination, imageUrl: e.target.value})}
+                            placeholder="Enter image URL"
+                            data-testid="add-destination-image"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="new-formUrl">Google Form URL</Label>
+                          <Input
+                            id="new-formUrl"
+                            value={newDestination.formUrl}
+                            onChange={(e) => setNewDestination({...newDestination, formUrl: e.target.value})}
+                            placeholder="Enter Google Form URL"
+                            data-testid="add-destination-form"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="new-icon">Bootstrap Icon</Label>
+                          <Input
+                            id="new-icon"
+                            value={newDestination.icon}
+                            onChange={(e) => setNewDestination({...newDestination, icon: e.target.value})}
+                            placeholder="e.g., bi-geo-alt"
+                            data-testid="add-destination-icon"
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={handleAddDestination}
+                            disabled={addDestinationMutation.isPending || !newDestination.name}
+                            className="flex-1 btn-primary-ttrave"
+                            data-testid="save-new-destination"
+                          >
+                            {addDestinationMutation.isPending ? "Adding..." : "Add Destination"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowAddDestination(false)}
+                            className="flex-1"
+                            data-testid="cancel-add-destination"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 <Card>
@@ -331,17 +484,98 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 {destination.formUrl}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  data-testid={`edit-destination-${destination.id}`}
-                                >
-                                  <i className="bi bi-pencil"></i>
-                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => setEditingDestination({...destination})}
+                                      data-testid={`edit-destination-${destination.id}`}
+                                    >
+                                      <i className="bi bi-pencil"></i>
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-md">
+                                    <DialogHeader>
+                                      <DialogTitle>Edit Destination</DialogTitle>
+                                    </DialogHeader>
+                                    {editingDestination && (
+                                      <div className="space-y-4">
+                                        <div>
+                                          <Label htmlFor="edit-name">Name</Label>
+                                          <Input
+                                            id="edit-name"
+                                            value={editingDestination.name}
+                                            onChange={(e) => setEditingDestination({...editingDestination, name: e.target.value})}
+                                            data-testid="edit-destination-name"
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-type">Type</Label>
+                                          <Select value={editingDestination.type} onValueChange={(value: "domestic" | "international") => setEditingDestination({...editingDestination, type: value})}>
+                                            <SelectTrigger data-testid="edit-destination-type">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="domestic">Domestic</SelectItem>
+                                              <SelectItem value="international">International</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-imageUrl">Image URL</Label>
+                                          <Input
+                                            id="edit-imageUrl"
+                                            value={editingDestination.imageUrl}
+                                            onChange={(e) => setEditingDestination({...editingDestination, imageUrl: e.target.value})}
+                                            data-testid="edit-destination-image"
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-formUrl">Google Form URL</Label>
+                                          <Input
+                                            id="edit-formUrl"
+                                            value={editingDestination.formUrl}
+                                            onChange={(e) => setEditingDestination({...editingDestination, formUrl: e.target.value})}
+                                            data-testid="edit-destination-form"
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-icon">Bootstrap Icon</Label>
+                                          <Input
+                                            id="edit-icon"
+                                            value={editingDestination.icon}
+                                            onChange={(e) => setEditingDestination({...editingDestination, icon: e.target.value})}
+                                            data-testid="edit-destination-icon"
+                                          />
+                                        </div>
+                                        <div className="flex space-x-2">
+                                          <Button
+                                            onClick={handleUpdateDestination}
+                                            disabled={updateDestinationMutation.isPending}
+                                            className="flex-1 btn-primary-ttrave"
+                                            data-testid="save-destination-changes"
+                                          >
+                                            {updateDestinationMutation.isPending ? "Saving..." : "Save Changes"}
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            onClick={() => setEditingDestination(null)}
+                                            className="flex-1"
+                                            data-testid="cancel-edit-destination"
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
                                   className="text-red-600 hover:text-red-800"
+                                  onClick={() => handleDeleteDestination(destination.id)}
                                   data-testid={`delete-destination-${destination.id}`}
                                 >
                                   <i className="bi bi-trash"></i>

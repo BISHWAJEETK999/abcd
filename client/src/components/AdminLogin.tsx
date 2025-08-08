@@ -67,7 +67,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="8709612003"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
