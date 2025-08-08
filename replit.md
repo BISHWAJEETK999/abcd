@@ -1,0 +1,74 @@
+# TTravel Hospitality
+
+## Overview
+
+TTravel Hospitality is a full-stack travel booking platform specializing in domestic and international travel packages. The application allows users to browse destinations, submit contact inquiries, subscribe to newsletters, and includes a comprehensive admin panel for content and destination management. Built with modern web technologies, it provides a responsive user interface with server-side data management and real-time content updates.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript for type safety and modern component development
+- **Routing**: Wouter for lightweight client-side routing
+- **State Management**: TanStack Query (React Query) for server state management and caching
+- **UI Components**: Radix UI primitives with shadcn/ui component system for consistent, accessible interface
+- **Styling**: Tailwind CSS with custom CSS variables for theme management and responsive design
+- **Build Tool**: Vite for fast development and optimized production builds
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js server framework
+- **Language**: TypeScript for both client and server code
+- **Session Management**: Express sessions with PostgreSQL session store
+- **API Design**: RESTful API endpoints with structured error handling
+- **Development**: Hot module replacement via Vite integration in development mode
+
+### Data Storage Solutions
+- **Database**: PostgreSQL with Neon serverless database hosting
+- **ORM**: Drizzle ORM for type-safe database queries and schema management
+- **Schema**: Structured tables for users, destinations, content, contact submissions, and newsletter subscriptions
+- **Migrations**: Database schema versioning through Drizzle Kit
+- **Fallback Storage**: In-memory storage implementation for development/testing scenarios
+
+### Authentication and Authorization
+- **Admin Authentication**: Session-based authentication for admin panel access
+- **Password Storage**: Plain text storage (should be upgraded to hashed passwords for production)
+- **Session Persistence**: PostgreSQL-backed session storage using connect-pg-simple
+- **Route Protection**: Middleware-based authentication checks for admin routes
+
+### Content Management System
+- **Dynamic Content**: Key-value content storage for editable website text and configuration
+- **Admin Controls**: Full CRUD operations for destinations, content management, and contact submission tracking
+- **File Uploads**: Support for destination images and media management
+- **Newsletter Management**: Subscription handling with active status tracking
+
+## External Dependencies
+
+### Database Services
+- **Neon Database**: Serverless PostgreSQL hosting with connection pooling
+- **Drizzle ORM**: Type-safe database interactions and schema management
+
+### UI and Design
+- **Radix UI**: Headless UI primitives for accessibility and component behavior
+- **shadcn/ui**: Pre-built component library built on Radix UI primitives
+- **Tailwind CSS**: Utility-first CSS framework for responsive design
+- **Google Fonts**: Poppins and Montserrat font families for typography
+- **Bootstrap Icons**: Icon library for UI elements and visual indicators
+
+### Development and Build Tools
+- **Vite**: Build tool and development server with hot module replacement
+- **TypeScript**: Type checking and enhanced developer experience
+- **ESBuild**: Fast bundling for production server builds
+- **PostCSS**: CSS processing with Tailwind CSS integration
+
+### Form and Validation
+- **React Hook Form**: Form state management and validation
+- **Zod**: Schema validation for API requests and form data
+- **Hookform Resolvers**: Integration between React Hook Form and Zod validation
+
+### External Integrations
+- **Unsplash**: Stock photography service for placeholder destination images
+- **Google Forms**: External form handling for travel inquiries and bookings
+- **Replit**: Development environment integration with runtime error handling
