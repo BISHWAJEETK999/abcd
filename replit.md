@@ -17,6 +17,13 @@ Preferred communication style: Simple, everyday language.
 - Default configuration includes Google Forms placeholder URL
 - Added inquiry.url and inquiry.button.text to content management system
 
+### Package Purchase Button Enhancement (January 2025)
+- Replaced "Enquire Now" buttons with "Buy Now" buttons in package listings
+- Package Buy Now buttons now connect to the same configurable inquiry URL from admin panel
+- Buttons styled with green color scheme to indicate purchase action
+- All package purchase buttons open the configured Google Form or inquiry URL in new tab
+- Centralized inquiry handling through content management system
+
 ## System Architecture
 
 ### Frontend Architecture

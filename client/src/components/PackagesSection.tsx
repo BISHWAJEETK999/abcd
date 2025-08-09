@@ -21,6 +21,17 @@ export default function PackagesSection({ destinationId, destinationName, onClos
     }
   });
 
+  const { data: content = {} } = useQuery<Record<string, string>>({
+    queryKey: ["/api/content"],
+  });
+
+  const handleBuyNow = () => {
+    const inquiryUrl = content["inquiry.url"];
+    if (inquiryUrl && inquiryUrl !== "#") {
+      window.open(inquiryUrl, "_blank");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -118,10 +129,11 @@ export default function PackagesSection({ destinationId, destinationName, onClos
                       <span className="text-gray-600 text-sm ml-1">per person</span>
                     </div>
                     <Button 
-                      className="bg-blue-500 hover:bg-blue-600 text-white"
-                      data-testid={`package-enquire-${pkg.id}`}
+                      onClick={handleBuyNow}
+                      className="bg-green-600 hover:bg-green-700 text-white font-semibold"
+                      data-testid={`package-buy-${pkg.id}`}
                     >
-                      Enquire Now
+                      Buy Now
                     </Button>
                   </div>
                 </CardContent>
