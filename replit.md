@@ -10,19 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (January 2025)
 
-### Inquiry Button Feature Added
+### Individual Package Buy Now URLs Implementation (January 2025)
+- **COMPLETED**: Enhanced package system with individual Buy Now URLs for each package
+- Added `buyNowUrl` field to packages database schema and admin management
+- Each package now has its own configurable Google Form or booking URL
+- Admin panel includes Buy Now URL fields in both package creation and editing forms
+- Updated PackagesSection component to use individual package URLs instead of global inquiry URL
+- Sample packages initialized with placeholder Buy Now URLs for testing
+- Successfully tested: package creation, editing, and Buy Now button functionality
+
+### Previous Features
 - Added configurable inquiry button functionality to home page hero section
 - Button text and URL can be managed from admin panel Content Management section
-- Button opens links in new tab when clicked
-- Default configuration includes Google Forms placeholder URL
-- Added inquiry.url and inquiry.button.text to content management system
-
-### Package Purchase Button Enhancement (January 2025)
-- Replaced "Enquire Now" buttons with "Buy Now" buttons in package listings
-- Package Buy Now buttons now connect to the same configurable inquiry URL from admin panel
-- Buttons styled with green color scheme to indicate purchase action
-- All package purchase buttons open the configured Google Form or inquiry URL in new tab
-- Centralized inquiry handling through content management system
+- Replaced generic "Enquire Now" with "Buy Now" buttons styled in green
+- Centralized content management through admin panel
 
 ## System Architecture
 
