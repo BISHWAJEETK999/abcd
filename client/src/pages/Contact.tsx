@@ -65,13 +65,13 @@ export default function Contact() {
         subtitle="Ready to plan your next adventure? Contact us today!"
       />
 
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="glass-card">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 {/* Contact Information */}
-                <div className="p-8 bg-ttrave-blue text-white">
+                <div className="p-8 bg-gradient-to-br from-ttrave-blue to-blue-700 text-white">
                   <h3 className="font-poppins text-2xl font-semibold mb-8">
                     Contact Information
                   </h3>
