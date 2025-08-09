@@ -71,7 +71,7 @@ export default function Contact() {
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 {/* Contact Information */}
-                <div className="p-8 bg-gradient-to-br from-ttrave-blue to-blue-700 text-white">
+                <div className="p-8 bg-gray-100 text-black">
                   <h3 className="font-poppins text-2xl font-semibold mb-8">
                     Contact Information
                   </h3>
@@ -103,28 +103,28 @@ export default function Contact() {
                   <div className="flex space-x-6 mt-8">
                     <a
                       href={content["social.facebook"] || "#"}
-                      className="text-white hover:text-ttrave-light-blue text-2xl transition-colors"
+                      className="text-ttrave-blue hover:text-blue-700 text-2xl transition-colors"
                       data-testid="contact-social-facebook"
                     >
                       <i className="bi bi-facebook"></i>
                     </a>
                     <a
                       href={content["social.twitter"] || "#"}
-                      className="text-white hover:text-ttrave-light-blue text-2xl transition-colors"
+                      className="text-ttrave-blue hover:text-blue-700 text-2xl transition-colors"
                       data-testid="contact-social-twitter"
                     >
                       <i className="bi bi-twitter"></i>
                     </a>
                     <a
                       href={content["social.instagram"] || "#"}
-                      className="text-white hover:text-ttrave-light-blue text-2xl transition-colors"
+                      className="text-ttrave-blue hover:text-blue-700 text-2xl transition-colors"
                       data-testid="contact-social-instagram"
                     >
                       <i className="bi bi-instagram"></i>
                     </a>
                     <a
                       href={content["social.linkedin"] || "#"}
-                      className="text-white hover:text-ttrave-light-blue text-2xl transition-colors"
+                      className="text-ttrave-blue hover:text-blue-700 text-2xl transition-colors"
                       data-testid="contact-social-linkedin"
                     >
                       <i className="bi bi-linkedin"></i>
