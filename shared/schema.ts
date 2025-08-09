@@ -55,6 +55,7 @@ export const packages = pgTable("packages", {
   duration: text("duration").notNull(),
   highlights: text("highlights").array().notNull(),
   location: text("location").notNull(),
+  buyNowUrl: text("buy_now_url").notNull(),
   isFeatured: boolean("is_featured").default(false),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),

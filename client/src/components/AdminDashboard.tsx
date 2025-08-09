@@ -42,6 +42,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     duration: "",
     highlights: [""],
     location: "",
+    buyNowUrl: "",
     isFeatured: false
   });
 
@@ -152,6 +153,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         duration: "",
         highlights: [""],
         location: "",
+        buyNowUrl: "",
         isFeatured: false
       });
     },
@@ -876,6 +878,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           />
                         </div>
                         <div>
+                          <Label htmlFor="package-buy-url">Buy Now URL</Label>
+                          <Input
+                            id="package-buy-url"
+                            value={newPackage.buyNowUrl}
+                            onChange={(e) => setNewPackage({ ...newPackage, buyNowUrl: e.target.value })}
+                            placeholder="Enter Google Form or booking URL"
+                            data-testid="package-buy-url"
+                          />
+                          <p className="text-sm text-gray-500 mt-1">URL that opens when customers click the Buy Now button</p>
+                        </div>
+                        <div>
                           <Label>Package Highlights</Label>
                           <div className="space-y-2">
                             {newPackage.highlights.map((highlight, index) => (
@@ -1078,6 +1091,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                             value={editingPackage.imageUrl}
                                             onChange={(e) => setEditingPackage({ ...editingPackage, imageUrl: e.target.value })}
                                           />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-package-buy-url">Buy Now URL</Label>
+                                          <Input
+                                            id="edit-package-buy-url"
+                                            value={editingPackage.buyNowUrl || ""}
+                                            onChange={(e) => setEditingPackage({ ...editingPackage, buyNowUrl: e.target.value })}
+                                            placeholder="Enter Google Form or booking URL"
+                                            data-testid="edit-package-buy-url"
+                                          />
+                                          <p className="text-sm text-gray-500 mt-1">URL that opens when customers click the Buy Now button</p>
                                         </div>
                                         <div>
                                           <Label>Package Highlights</Label>

@@ -162,6 +162,7 @@ export class MemStorage implements IStorage {
         duration: "6 Days / 5 Nights",
         highlights: ["Visit to Taj Mahal", "Red Fort Delhi", "Amber Fort Jaipur"],
         location: "Delhi - Agra - Jaipur",
+        buyNowUrl: "https://forms.gle/golden-triangle-tour-booking",
         isFeatured: true,
         isActive: true,
         createdAt: new Date()
@@ -180,6 +181,7 @@ export class MemStorage implements IStorage {
         duration: "8 Days / 7 Nights",
         highlights: ["City Palace Udaipur", "Mehrangarh Fort Jodhpur", "Desert Safari Jaisalmer"],
         location: "Jaipur - Udaipur - Jodhpur - Jaisalmer",
+        buyNowUrl: "https://forms.gle/royal-rajasthan-booking",
         isFeatured: false,
         isActive: true,
         createdAt: new Date()
@@ -198,6 +200,7 @@ export class MemStorage implements IStorage {
         duration: "10 Days / 9 Nights",
         highlights: ["Eiffel Tower Tour", "Louvre Museum", "Nice & Cannes", "Monaco Grand Prix Circuit"],
         location: "Paris - Nice - Cannes - Monaco",
+        buyNowUrl: "https://forms.gle/paris-riviera-booking",
         isFeatured: true,
         isActive: true,
         createdAt: new Date()

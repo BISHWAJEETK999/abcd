@@ -25,10 +25,9 @@ export default function PackagesSection({ destinationId, destinationName, onClos
     queryKey: ["/api/content"],
   });
 
-  const handleBuyNow = () => {
-    const inquiryUrl = content["inquiry.url"];
-    if (inquiryUrl && inquiryUrl !== "#") {
-      window.open(inquiryUrl, "_blank");
+  const handleBuyNow = (packageBuyUrl: string) => {
+    if (packageBuyUrl && packageBuyUrl !== "#") {
+      window.open(packageBuyUrl, "_blank");
     }
   };
 
@@ -129,7 +128,7 @@ export default function PackagesSection({ destinationId, destinationName, onClos
                       <span className="text-gray-600 text-sm ml-1">per person</span>
                     </div>
                     <Button 
-                      onClick={handleBuyNow}
+                      onClick={() => handleBuyNow(pkg.buyNowUrl)}
                       className="bg-green-600 hover:bg-green-700 text-white font-semibold"
                       data-testid={`package-buy-${pkg.id}`}
                     >
