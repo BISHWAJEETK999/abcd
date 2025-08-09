@@ -71,7 +71,7 @@ export default function Contact() {
             <div className="glass-card">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 {/* Contact Information */}
-                <div className="p-8 text-white">
+                <div className="p-8 bg-ttrave-blue text-white">
                   <h3 className="font-poppins text-2xl font-semibold mb-8">
                     Contact Information
                   </h3>
@@ -133,11 +133,11 @@ export default function Contact() {
                 </div>
 
                 {/* Contact Form */}
-                <div className="p-8">
+                <div className="p-8 bg-white">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="firstName" className="text-white">
+                        <Label htmlFor="firstName" className="text-gray-700">
                           First Name
                         </Label>
                         <Input
@@ -150,7 +150,7 @@ export default function Contact() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="lastName" className="text-white">
+                        <Label htmlFor="lastName" className="text-gray-700">
                           Last Name
                         </Label>
                         <Input
@@ -164,7 +164,7 @@ export default function Contact() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-white">
+                      <Label htmlFor="email" className="text-gray-700">
                         Email
                       </Label>
                       <Input
@@ -177,7 +177,7 @@ export default function Contact() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="subject" className="text-white">
+                      <Label htmlFor="subject" className="text-gray-700">
                         Subject
                       </Label>
                       <Input
@@ -190,7 +190,7 @@ export default function Contact() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="message" className="text-white">
+                      <Label htmlFor="message" className="text-gray-700">
                         Message
                       </Label>
                       <Textarea
