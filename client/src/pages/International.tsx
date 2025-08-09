@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import DestinationCard from "@/components/DestinationCard";
+import PackagesSection from "@/components/PackagesSection";
 
 export default function International() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDestination, setSelectedDestination] = useState<{id: string, name: string} | null>(null);
 
   const { data: destinations = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/destinations/international"],
@@ -17,6 +19,14 @@ export default function International() {
       destination.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [destinations, searchTerm]);
+
+  const handleExploreDestination = (destinationId: string, destinationName: string) => {
+    setSelectedDestination({ id: destinationId, name: destinationName });
+  };
+
+  const handleClosePackages = () => {
+    setSelectedDestination(null);
+  };
 
   return (
     <>
@@ -47,6 +57,7 @@ export default function International() {
                   imageUrl={destination.imageUrl}
                   formUrl={destination.formUrl}
                   icon={destination.icon}
+                  onExplore={handleExploreDestination}
                 />
               ))}
             </div>
@@ -61,6 +72,14 @@ export default function International() {
           )}
         </div>
       </section>
+
+      {selectedDestination && (
+        <PackagesSection
+          destinationId={selectedDestination.id}
+          destinationName={selectedDestination.name}
+          onClose={handleClosePackages}
+        />
+      )}
     </>
   );
 }

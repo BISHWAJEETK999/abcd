@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -29,6 +31,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     icon: ""
   });
 
+  const [editingPackage, setEditingPackage] = useState<any>(null);
+  const [showAddPackage, setShowAddPackage] = useState(false);
+  const [newPackage, setNewPackage] = useState({
+    destinationId: "",
+    name: "",
+    description: "",
+    imageUrl: "",
+    pricePerPerson: "",
+    duration: "",
+    highlights: [""],
+    location: "",
+    isFeatured: false
+  });
+
   const { data: content = {} } = useQuery<Record<string, string>>({
     queryKey: ["/api/content"],
   });
@@ -43,6 +59,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const { data: stats = {} } = useQuery<Record<string, number>>({
     queryKey: ["/api/admin/stats"],
+  });
+
+  const { data: packages = [] } = useQuery<any[]>({
+    queryKey: ["/api/admin/packages"],
   });
 
   const logoutMutation = useMutation({
@@ -113,6 +133,55 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     },
   });
 
+  const addPackageMutation = useMutation({
+    mutationFn: (packageData: typeof newPackage) =>
+      apiRequest("POST", "/api/admin/packages", packageData),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Package added successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+      setShowAddPackage(false);
+      setNewPackage({
+        destinationId: "",
+        name: "",
+        description: "",
+        imageUrl: "",
+        pricePerPerson: "",
+        duration: "",
+        highlights: [""],
+        location: "",
+        isFeatured: false
+      });
+    },
+  });
+
+  const updatePackageMutation = useMutation({
+    mutationFn: (packageData: any) =>
+      apiRequest("PUT", `/api/admin/packages/${packageData.id}`, packageData),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Package updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+      setEditingPackage(null);
+    },
+  });
+
+  const deletePackageMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequest("DELETE", `/api/admin/packages/${id}`),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Package deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+    },
+  });
+
   const handleSaveContent = () => {
     const formData = new FormData(document.getElementById("contentForm") as HTMLFormElement);
     const updates: { key: string; value: string }[] = [];
@@ -141,6 +210,52 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleDeleteDestination = (id: string) => {
     if (confirm("Are you sure you want to delete this destination?")) {
       deleteDestinationMutation.mutate(id);
+    }
+  };
+
+  const handleAddPackage = () => {
+    addPackageMutation.mutate(newPackage);
+  };
+
+  const handleUpdatePackage = () => {
+    if (editingPackage) {
+      updatePackageMutation.mutate(editingPackage);
+    }
+  };
+
+  const handleDeletePackage = (id: string) => {
+    if (confirm("Are you sure you want to delete this package?")) {
+      deletePackageMutation.mutate(id);
+    }
+  };
+
+  const addHighlight = (isNew = false) => {
+    if (isNew) {
+      setNewPackage({ ...newPackage, highlights: [...newPackage.highlights, ""] });
+    } else if (editingPackage) {
+      setEditingPackage({ ...editingPackage, highlights: [...editingPackage.highlights, ""] });
+    }
+  };
+
+  const removeHighlight = (index: number, isNew = false) => {
+    if (isNew) {
+      const highlights = newPackage.highlights.filter((_: string, i: number) => i !== index);
+      setNewPackage({ ...newPackage, highlights: highlights.length ? highlights : [""] });
+    } else if (editingPackage) {
+      const highlights = editingPackage.highlights.filter((_: string, i: number) => i !== index);
+      setEditingPackage({ ...editingPackage, highlights: highlights.length ? highlights : [""] });
+    }
+  };
+
+  const updateHighlight = (index: number, value: string, isNew = false) => {
+    if (isNew) {
+      const highlights = [...newPackage.highlights];
+      highlights[index] = value;
+      setNewPackage({ ...newPackage, highlights });
+    } else if (editingPackage) {
+      const highlights = [...editingPackage.highlights];
+      highlights[index] = value;
+      setEditingPackage({ ...editingPackage, highlights });
     }
   };
 
@@ -180,6 +295,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 >
                   <i className="bi bi-geo-alt"></i>
                   <span>Destinations</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection("packages")}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                    activeSection === "packages" 
+                      ? "bg-ttrave-primary text-white" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  data-testid="admin-nav-packages"
+                >
+                  <i className="bi bi-box"></i>
+                  <span>Travel Packages</span>
                 </button>
                 <button
                   onClick={() => setActiveSection("submissions")}
@@ -224,6 +351,40 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
 
                 <form id="contentForm" className="space-y-6">
+                  <Card>
+                    <CardHeader className="bg-ttrave-primary text-white">
+                      <CardTitle className="flex items-center">
+                        <i className="bi bi-image me-2"></i>
+                        Site Logo & Branding
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                          <Label htmlFor="site.logo">Site Logo URL</Label>
+                          <Input
+                            id="site.logo"
+                            name="site.logo"
+                            defaultValue={content["site.logo"] || ""}
+                            placeholder="Enter logo image URL"
+                            data-testid="input-site-logo"
+                          />
+                          <p className="text-sm text-gray-500 mt-1">Upload your logo to an image hosting service and paste the URL here</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="site.name">Site Name</Label>
+                          <Input
+                            id="site.name"
+                            name="site.name"
+                            defaultValue={content["site.name"] || ""}
+                            placeholder="Enter site name"
+                            data-testid="input-site-name"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card>
                     <CardHeader className="bg-ttrave-primary text-white">
                       <CardTitle className="flex items-center">
@@ -583,6 +744,386 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               </td>
                             </tr>
                           ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Packages Management */}
+            {activeSection === "packages" && (
+              <div className="admin-content">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="font-poppins text-2xl font-semibold">Travel Packages Management</h2>
+                  <Dialog open={showAddPackage} onOpenChange={setShowAddPackage}>
+                    <DialogTrigger asChild>
+                      <Button className="btn-primary-ttrave" data-testid="add-package-button">
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Add New Package
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Add New Travel Package</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="package-destination">Destination</Label>
+                          <Select value={newPackage.destinationId} onValueChange={(value) => setNewPackage({ ...newPackage, destinationId: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select destination" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {destinations.map((dest: any) => (
+                                <SelectItem key={dest.id} value={dest.id}>
+                                  {dest.name} ({dest.type})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="package-name">Package Name</Label>
+                          <Input
+                            id="package-name"
+                            value={newPackage.name}
+                            onChange={(e) => setNewPackage({ ...newPackage, name: e.target.value })}
+                            placeholder="Enter package name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="package-description">Description</Label>
+                          <Textarea
+                            id="package-description"
+                            value={newPackage.description}
+                            onChange={(e) => setNewPackage({ ...newPackage, description: e.target.value })}
+                            placeholder="Enter package description"
+                            rows={3}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="package-price">Price per Person</Label>
+                            <Input
+                              id="package-price"
+                              value={newPackage.pricePerPerson}
+                              onChange={(e) => setNewPackage({ ...newPackage, pricePerPerson: e.target.value })}
+                              placeholder="e.g., ₹25,000"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="package-duration">Duration</Label>
+                            <Input
+                              id="package-duration"
+                              value={newPackage.duration}
+                              onChange={(e) => setNewPackage({ ...newPackage, duration: e.target.value })}
+                              placeholder="e.g., 6 Days / 5 Nights"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="package-location">Location</Label>
+                          <Input
+                            id="package-location"
+                            value={newPackage.location}
+                            onChange={(e) => setNewPackage({ ...newPackage, location: e.target.value })}
+                            placeholder="e.g., Delhi - Agra - Jaipur"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="package-image">Image URL</Label>
+                          <Input
+                            id="package-image"
+                            value={newPackage.imageUrl}
+                            onChange={(e) => setNewPackage({ ...newPackage, imageUrl: e.target.value })}
+                            placeholder="Enter image URL"
+                          />
+                        </div>
+                        <div>
+                          <Label>Package Highlights</Label>
+                          <div className="space-y-2">
+                            {newPackage.highlights.map((highlight, index) => (
+                              <div key={index} className="flex gap-2">
+                                <Input
+                                  value={highlight}
+                                  onChange={(e) => updateHighlight(index, e.target.value, true)}
+                                  placeholder={`Highlight ${index + 1}`}
+                                />
+                                {newPackage.highlights.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => removeHighlight(index, true)}
+                                  >
+                                    <i className="bi bi-trash"></i>
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addHighlight(true)}
+                            >
+                              <i className="bi bi-plus"></i> Add Highlight
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="package-featured"
+                            checked={newPackage.isFeatured}
+                            onCheckedChange={(checked) => setNewPackage({ ...newPackage, isFeatured: !!checked })}
+                          />
+                          <Label htmlFor="package-featured">Featured Package</Label>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={handleAddPackage}
+                            disabled={addPackageMutation.isPending}
+                            className="flex-1 btn-primary-ttrave"
+                          >
+                            {addPackageMutation.isPending ? "Adding..." : "Add Package"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowAddPackage(false)}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Existing Packages</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Package
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Destination
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Price
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Duration
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {packages.map((pkg: any) => (
+                            <tr key={pkg.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <img className="h-10 w-10 rounded object-cover" src={pkg.imageUrl} alt={pkg.name} />
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">{pkg.name}</div>
+                                    <div className="text-sm text-gray-500">{pkg.location}</div>
+                                    {pkg.isFeatured && <Badge className="mt-1">Featured</Badge>}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {destinations.find((d: any) => d.id === pkg.destinationId)?.name || 'Unknown'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {pkg.pricePerPerson}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {pkg.duration}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <Badge variant={pkg.isActive ? 'default' : 'secondary'}>
+                                  {pkg.isActive ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => setEditingPackage(pkg)}
+                                      data-testid={`edit-package-${pkg.id}`}
+                                    >
+                                      <i className="bi bi-pencil"></i>
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle>Edit Package</DialogTitle>
+                                    </DialogHeader>
+                                    {editingPackage && (
+                                      <div className="space-y-4">
+                                        <div>
+                                          <Label htmlFor="edit-package-destination">Destination</Label>
+                                          <Select 
+                                            value={editingPackage.destinationId} 
+                                            onValueChange={(value) => setEditingPackage({ ...editingPackage, destinationId: value })}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select destination" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {destinations.map((dest: any) => (
+                                                <SelectItem key={dest.id} value={dest.id}>
+                                                  {dest.name} ({dest.type})
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-package-name">Package Name</Label>
+                                          <Input
+                                            id="edit-package-name"
+                                            value={editingPackage.name}
+                                            onChange={(e) => setEditingPackage({ ...editingPackage, name: e.target.value })}
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-package-description">Description</Label>
+                                          <Textarea
+                                            id="edit-package-description"
+                                            value={editingPackage.description}
+                                            onChange={(e) => setEditingPackage({ ...editingPackage, description: e.target.value })}
+                                            rows={3}
+                                          />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label htmlFor="edit-package-price">Price per Person</Label>
+                                            <Input
+                                              id="edit-package-price"
+                                              value={editingPackage.pricePerPerson}
+                                              onChange={(e) => setEditingPackage({ ...editingPackage, pricePerPerson: e.target.value })}
+                                            />
+                                          </div>
+                                          <div>
+                                            <Label htmlFor="edit-package-duration">Duration</Label>
+                                            <Input
+                                              id="edit-package-duration"
+                                              value={editingPackage.duration}
+                                              onChange={(e) => setEditingPackage({ ...editingPackage, duration: e.target.value })}
+                                            />
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-package-location">Location</Label>
+                                          <Input
+                                            id="edit-package-location"
+                                            value={editingPackage.location}
+                                            onChange={(e) => setEditingPackage({ ...editingPackage, location: e.target.value })}
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-package-image">Image URL</Label>
+                                          <Input
+                                            id="edit-package-image"
+                                            value={editingPackage.imageUrl}
+                                            onChange={(e) => setEditingPackage({ ...editingPackage, imageUrl: e.target.value })}
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label>Package Highlights</Label>
+                                          <div className="space-y-2">
+                                            {editingPackage.highlights.map((highlight: string, index: number) => (
+                                              <div key={index} className="flex gap-2">
+                                                <Input
+                                                  value={highlight}
+                                                  onChange={(e) => updateHighlight(index, e.target.value, false)}
+                                                  placeholder={`Highlight ${index + 1}`}
+                                                />
+                                                {editingPackage.highlights.length > 1 && (
+                                                  <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeHighlight(index, false)}
+                                                  >
+                                                    <i className="bi bi-trash"></i>
+                                                  </Button>
+                                                )}
+                                              </div>
+                                            ))}
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => addHighlight(false)}
+                                            >
+                                              <i className="bi bi-plus"></i> Add Highlight
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id="edit-package-featured"
+                                            checked={editingPackage.isFeatured}
+                                            onCheckedChange={(checked) => setEditingPackage({ ...editingPackage, isFeatured: !!checked })}
+                                          />
+                                          <Label htmlFor="edit-package-featured">Featured Package</Label>
+                                        </div>
+                                        <div className="flex space-x-2">
+                                          <Button
+                                            onClick={handleUpdatePackage}
+                                            disabled={updatePackageMutation.isPending}
+                                            className="flex-1 btn-primary-ttrave"
+                                          >
+                                            {updatePackageMutation.isPending ? "Saving..." : "Save Changes"}
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            onClick={() => setEditingPackage(null)}
+                                            className="flex-1"
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-800"
+                                  onClick={() => handleDeletePackage(pkg.id)}
+                                  data-testid={`delete-package-${pkg.id}`}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                          {packages.length === 0 && (
+                            <tr>
+                              <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                                No packages created yet
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>

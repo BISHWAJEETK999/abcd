@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDestinationSchema, insertContentSchema, insertContactSubmissionSchema, insertNewsletterSubscriptionSchema } from "@shared/schema";
+import { insertDestinationSchema, insertContentSchema, insertContactSubmissionSchema, insertNewsletterSubscriptionSchema, insertPackageSchema } from "@shared/schema";
 import { z } from "zod";
 
 const adminAuthSchema = z.object({
@@ -267,6 +267,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Package routes
+  app.get("/api/packages", async (req, res) => {
+    try {
+      const packages = await storage.getPackages();
+      res.json(packages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch packages" });
+    }
+  });
+
+  app.get("/api/packages/destination/:destinationId", async (req, res) => {
+    try {
+      const destinationId = req.params.destinationId;
+      const packages = await storage.getPackagesByDestination(destinationId);
+      res.json(packages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch packages" });
+    }
+  });
+
+  // Admin package routes
+  app.get("/api/admin/packages", requireAuth, async (req, res) => {
+    try {
+      const packages = await storage.getPackages();
+      res.json(packages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch packages" });
+    }
+  });
+
+  app.post("/api/admin/packages", requireAuth, async (req, res) => {
+    try {
+      const packageData = insertPackageSchema.parse(req.body);
+      const created = await storage.createPackage(packageData);
+      res.json(created);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid package data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create package" });
+      }
+    }
+  });
+
+  app.put("/api/admin/packages/:id", requireAuth, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updates = insertPackageSchema.partial().parse(req.body);
+      const updated = await storage.updatePackage(id, updates);
+      
+      if (updated) {
+        res.json(updated);
+      } else {
+        res.status(404).json({ message: "Package not found" });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid package data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update package" });
+      }
+    }
+  });
+
+  app.delete("/api/admin/packages/:id", requireAuth, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const deleted = await storage.deletePackage(id);
+      
+      if (deleted) {
+        res.json({ success: true, message: "Package deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Package not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete package" });
     }
   });
 

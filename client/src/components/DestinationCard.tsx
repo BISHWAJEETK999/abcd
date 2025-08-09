@@ -7,7 +7,7 @@ interface DestinationCardProps {
   imageUrl: string;
   formUrl: string;
   icon?: string;
-  onExplore?: (formUrl: string) => void;
+  onExplore?: (destinationId: string, destinationName: string) => void;
 }
 
 export default function DestinationCard({
@@ -20,7 +20,7 @@ export default function DestinationCard({
 }: DestinationCardProps) {
   const handleExplore = () => {
     if (onExplore) {
-      onExplore(formUrl);
+      onExplore(id, name);
     } else {
       window.open(formUrl, '_blank');
     }

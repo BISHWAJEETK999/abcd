@@ -53,7 +53,16 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
-              <i className="bi bi-airplane text-2xl text-ttrave-primary"></i>
+              {content["site.logo"] ? (
+                <img 
+                  src={content["site.logo"]} 
+                  alt="Logo" 
+                  className="h-8 w-auto"
+                  data-testid="site-logo"
+                />
+              ) : (
+                <i className="bi bi-airplane text-2xl text-ttrave-primary"></i>
+              )}
               <span className="font-poppins text-xl font-bold text-ttrave-primary">
                 {content["site.name"] || "TTravel Hospitality"}
               </span>
@@ -73,14 +82,6 @@ export default function Layout({ children }: LayoutProps) {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                href="/admin"
-                className="nav-link-ttrave text-ttrave-primary"
-                data-testid="nav-admin"
-              >
-                <i className="bi bi-gear me-1"></i>
-                Admin
-              </Link>
             </div>
 
             {/* Mobile Menu Button */}

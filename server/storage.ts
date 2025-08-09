@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Destination, type InsertDestination, type Content, type InsertContent, type ContactSubmission, type InsertContactSubmission, type NewsletterSubscription, type InsertNewsletterSubscription } from "@shared/schema";
+import { type User, type InsertUser, type Destination, type InsertDestination, type Content, type InsertContent, type ContactSubmission, type InsertContactSubmission, type NewsletterSubscription, type InsertNewsletterSubscription, type Package, type InsertPackage } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -29,6 +29,14 @@ export interface IStorage {
   // Newsletter Subscriptions
   getNewsletterSubscriptions(): Promise<NewsletterSubscription[]>;
   createNewsletterSubscription(subscription: InsertNewsletterSubscription): Promise<NewsletterSubscription>;
+  
+  // Packages
+  getPackages(): Promise<Package[]>;
+  getPackagesByDestination(destinationId: string): Promise<Package[]>;
+  getPackage(id: string): Promise<Package | undefined>;
+  createPackage(packageData: InsertPackage): Promise<Package>;
+  updatePackage(id: string, packageData: Partial<InsertPackage>): Promise<Package | undefined>;
+  deletePackage(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -37,6 +45,7 @@ export class MemStorage implements IStorage {
   private content: Map<string, Content>;
   private contactSubmissions: Map<string, ContactSubmission>;
   private newsletterSubscriptions: Map<string, NewsletterSubscription>;
+  private packages: Map<string, Package>;
 
   constructor() {
     this.users = new Map();
@@ -44,6 +53,7 @@ export class MemStorage implements IStorage {
     this.content = new Map();
     this.contactSubmissions = new Map();
     this.newsletterSubscriptions = new Map();
+    this.packages = new Map();
     
     this.initializeDefaultData();
   }
@@ -126,6 +136,71 @@ export class MemStorage implements IStorage {
         createdAt: new Date()
       });
     });
+
+    // Initialize sample packages
+    this.initializeSamplePackages();
+  }
+
+  private initializeSamplePackages() {
+    // Get some destinations to link packages to
+    const destinations = Array.from(this.destinations.values());
+    const apDestination = destinations.find(d => d.name === "Andhra Pradesh");
+    const rajasthanDestination = destinations.find(d => d.name === "Rajasthan");
+    const franceDestination = destinations.find(d => d.name === "France");
+    
+    if (apDestination) {
+      const packageId = randomUUID();
+      this.packages.set(packageId, {
+        id: packageId,
+        destinationId: apDestination.id,
+        name: "Golden Triangle Tour",
+        description: "Discover India's hidden gems with hand-picked tour packages across the country.",
+        imageUrl: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&h=300&fit=crop",
+        pricePerPerson: "₹25,000",
+        duration: "6 Days / 5 Nights",
+        highlights: ["Visit to Taj Mahal", "Red Fort Delhi", "Amber Fort Jaipur"],
+        location: "Delhi - Agra - Jaipur",
+        isFeatured: true,
+        isActive: true,
+        createdAt: new Date()
+      });
+    }
+
+    if (rajasthanDestination) {
+      const packageId = randomUUID();
+      this.packages.set(packageId, {
+        id: packageId,
+        destinationId: rajasthanDestination.id,
+        name: "Royal Rajasthan Experience",
+        description: "Experience the royal heritage and culture of Rajasthan with our premium packages.",
+        imageUrl: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&h=300&fit=crop",
+        pricePerPerson: "₹35,000",
+        duration: "8 Days / 7 Nights",
+        highlights: ["City Palace Udaipur", "Mehrangarh Fort Jodhpur", "Desert Safari Jaisalmer"],
+        location: "Jaipur - Udaipur - Jodhpur - Jaisalmer",
+        isFeatured: false,
+        isActive: true,
+        createdAt: new Date()
+      });
+    }
+
+    if (franceDestination) {
+      const packageId = randomUUID();
+      this.packages.set(packageId, {
+        id: packageId,
+        destinationId: franceDestination.id,
+        name: "Paris & French Riviera",
+        description: "Explore the romance of Paris and the glamour of the French Riviera in this premium package.",
+        imageUrl: "https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop",
+        pricePerPerson: "€2,500",
+        duration: "10 Days / 9 Nights",
+        highlights: ["Eiffel Tower Tour", "Louvre Museum", "Nice & Cannes", "Monaco Grand Prix Circuit"],
+        location: "Paris - Nice - Cannes - Monaco",
+        isFeatured: true,
+        isActive: true,
+        createdAt: new Date()
+      });
+    }
   }
 
   // User methods
@@ -274,6 +349,50 @@ export class MemStorage implements IStorage {
     };
     this.newsletterSubscriptions.set(id, subscription);
     return subscription;
+  }
+
+  // Package methods
+  async getPackages(): Promise<Package[]> {
+    return Array.from(this.packages.values()).filter(p => p.isActive);
+  }
+
+  async getPackagesByDestination(destinationId: string): Promise<Package[]> {
+    return Array.from(this.packages.values()).filter(p => p.destinationId === destinationId && p.isActive);
+  }
+
+  async getPackage(id: string): Promise<Package | undefined> {
+    return this.packages.get(id);
+  }
+
+  async createPackage(insertPackage: InsertPackage): Promise<Package> {
+    const id = randomUUID();
+    const packageData: Package = {
+      ...insertPackage,
+      id,
+      isFeatured: insertPackage.isFeatured ?? false,
+      isActive: insertPackage.isActive ?? true,
+      createdAt: new Date()
+    };
+    this.packages.set(id, packageData);
+    return packageData;
+  }
+
+  async updatePackage(id: string, updates: Partial<InsertPackage>): Promise<Package | undefined> {
+    const packageData = this.packages.get(id);
+    if (!packageData) return undefined;
+    
+    const updatedPackage = { ...packageData, ...updates };
+    this.packages.set(id, updatedPackage);
+    return updatedPackage;
+  }
+
+  async deletePackage(id: string): Promise<boolean> {
+    const packageData = this.packages.get(id);
+    if (!packageData) return false;
+    
+    const updatedPackage = { ...packageData, isActive: false };
+    this.packages.set(id, updatedPackage);
+    return true;
   }
 }
 
