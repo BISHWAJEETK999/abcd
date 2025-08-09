@@ -414,6 +414,40 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </CardContent>
                   </Card>
 
+                  <Card>
+                    <CardHeader className="bg-green-600 text-white">
+                      <CardTitle className="flex items-center">
+                        <i className="bi bi-cursor-fill me-2"></i>
+                        Inquiry Button Settings
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div>
+                        <Label htmlFor="inquiry.button.text">Button Text</Label>
+                        <Input
+                          id="inquiry.button.text"
+                          name="inquiry.button.text"
+                          defaultValue={content["inquiry.button.text"] || ""}
+                          placeholder="Enquire Now"
+                          data-testid="content-inquiry-button-text"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">Text displayed on the inquiry button</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="inquiry.url">Inquiry URL</Label>
+                        <Input
+                          id="inquiry.url"
+                          name="inquiry.url"
+                          type="url"
+                          defaultValue={content["inquiry.url"] || ""}
+                          placeholder="https://forms.gle/your-form-id"
+                          data-testid="content-inquiry-url"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">URL that opens when users click the inquiry button (e.g., Google Form, WhatsApp, contact page)</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader className="bg-blue-500 text-white">

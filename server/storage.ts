@@ -80,6 +80,8 @@ export class MemStorage implements IStorage {
       { key: "social.instagram", value: "#" },
       { key: "social.linkedin", value: "#" },
       { key: "social.twitter", value: "#" },
+      { key: "inquiry.url", value: "https://forms.gle/your-inquiry-form-id" },
+      { key: "inquiry.button.text", value: "Enquire Now" },
     ];
 
     defaultContent.forEach(item => {

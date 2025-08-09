@@ -8,6 +8,15 @@ TTravel Hospitality is a full-stack travel booking platform specializing in dome
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (January 2025)
+
+### Inquiry Button Feature Added
+- Added configurable inquiry button functionality to home page hero section
+- Button text and URL can be managed from admin panel Content Management section
+- Button opens links in new tab when clicked
+- Default configuration includes Google Forms placeholder URL
+- Added inquiry.url and inquiry.button.text to content management system
+
 ## System Architecture
 
 ### Frontend Architecture

@@ -20,8 +20,14 @@ export default function Home() {
         <Button 
           className="btn-primary-ttrave text-lg px-8 py-3"
           data-testid="hero-enquire-button"
+          onClick={() => {
+            const inquiryUrl = content["inquiry.url"] || "#";
+            if (inquiryUrl !== "#") {
+              window.open(inquiryUrl, "_blank");
+            }
+          }}
         >
-          Enquire Now
+          {content["inquiry.button.text"] || "Enquire Now"}
         </Button>
       </Hero>
 
