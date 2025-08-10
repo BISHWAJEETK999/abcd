@@ -1054,11 +1054,51 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               </td>
                             </tr>
                           ))}
+                          {destinations.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                                No destinations found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Destinations Pagination */}
+                {destinations.length > itemsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDestinationPage(Math.max(1, destinationPage - 1))}
+                      disabled={destinationPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    {Array.from({ length: Math.ceil(destinations.length / itemsPerPage) }, (_, i) => (
+                      <Button
+                        key={i + 1}
+                        variant={destinationPage === i + 1 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setDestinationPage(i + 1)}
+                        className={destinationPage === i + 1 ? "bg-ttrave-primary text-white" : ""}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDestinationPage(Math.min(Math.ceil(destinations.length / itemsPerPage), destinationPage + 1))}
+                      disabled={destinationPage === Math.ceil(destinations.length / itemsPerPage)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
