@@ -317,6 +317,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <span>Content Management</span>
                 </button>
                 <button
+                  onClick={() => setActiveSection("about")}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                    activeSection === "about" 
+                      ? "bg-ttrave-primary text-white" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  data-testid="admin-nav-about"
+                >
+                  <i className="bi bi-info-circle"></i>
+                  <span>About Page</span>
+                </button>
+                <button
                   onClick={() => setActiveSection("destinations")}
                   className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
                     activeSection === "destinations" 
@@ -579,6 +591,210 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </CardContent>
                     </Card>
                   </div>
+                </form>
+              </div>
+            )}
+
+            {/* About Page Management */}
+            {activeSection === "about" && (
+              <div className="admin-content">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="font-poppins text-2xl font-semibold">About Page Content</h2>
+                  <Button
+                    onClick={handleSaveContent}
+                    className="btn-primary-ttrave"
+                    disabled={updateContentMutation.isPending}
+                    data-testid="save-about-content-button"
+                  >
+                    <i className="bi bi-check-circle me-2"></i>
+                    {updateContentMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+
+                <form id="contentForm" className="space-y-6">
+                  <Card>
+                    <CardHeader className="bg-ttrave-primary text-white">
+                      <CardTitle className="flex items-center">
+                        <i className="bi bi-image me-2"></i>
+                        Hero Section
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div>
+                        <Label htmlFor="about.hero.title">Hero Title</Label>
+                        <Input
+                          id="about.hero.title"
+                          name="about.hero.title"
+                          defaultValue={content["about.hero.title"] || ""}
+                          placeholder="About TTravel Hospitality"
+                          data-testid="about-hero-title"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="about.hero.subtitle">Hero Subtitle</Label>
+                        <Input
+                          id="about.hero.subtitle"
+                          name="about.hero.subtitle"
+                          defaultValue={content["about.hero.subtitle"] || ""}
+                          placeholder="Your trusted partner for unforgettable travel experiences"
+                          data-testid="about-hero-subtitle"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="bg-blue-600 text-white">
+                      <CardTitle className="flex items-center">
+                        <i className="bi bi-people me-2"></i>
+                        Who We Are Section
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div>
+                        <Label htmlFor="about.who.title">Section Title</Label>
+                        <Input
+                          id="about.who.title"
+                          name="about.who.title"
+                          defaultValue={content["about.who.title"] || ""}
+                          placeholder="Who We Are"
+                          data-testid="about-who-title"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="about.who.description1">First Paragraph</Label>
+                        <Textarea
+                          id="about.who.description1"
+                          name="about.who.description1"
+                          defaultValue={content["about.who.description1"] || ""}
+                          placeholder="First paragraph about your company..."
+                          rows={3}
+                          data-testid="about-who-description1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="about.who.description2">Second Paragraph</Label>
+                        <Textarea
+                          id="about.who.description2"
+                          name="about.who.description2"
+                          defaultValue={content["about.who.description2"] || ""}
+                          placeholder="Second paragraph about your company..."
+                          rows={3}
+                          data-testid="about-who-description2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="about.who.image">Section Image URL</Label>
+                        <Input
+                          id="about.who.image"
+                          name="about.who.image"
+                          type="url"
+                          defaultValue={content["about.who.image"] || ""}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          data-testid="about-who-image"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">URL of the image displayed in the Who We Are section</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="bg-green-600 text-white">
+                      <CardTitle className="flex items-center">
+                        <i className="bi bi-award me-2"></i>
+                        Core Values Section
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div>
+                        <Label htmlFor="about.values.title">Main Section Title</Label>
+                        <Input
+                          id="about.values.title"
+                          name="about.values.title"
+                          defaultValue={content["about.values.title"] || ""}
+                          placeholder="Our Core Values"
+                          data-testid="about-values-title"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-ttrave-dark-gray">Mission</h4>
+                          <div>
+                            <Label htmlFor="about.mission.title">Mission Title</Label>
+                            <Input
+                              id="about.mission.title"
+                              name="about.mission.title"
+                              defaultValue={content["about.mission.title"] || ""}
+                              placeholder="Our Mission"
+                              data-testid="about-mission-title"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="about.mission.description">Mission Description</Label>
+                            <Textarea
+                              id="about.mission.description"
+                              name="about.mission.description"
+                              defaultValue={content["about.mission.description"] || ""}
+                              placeholder="Your mission statement..."
+                              rows={4}
+                              data-testid="about-mission-description"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-ttrave-dark-gray">Vision</h4>
+                          <div>
+                            <Label htmlFor="about.vision.title">Vision Title</Label>
+                            <Input
+                              id="about.vision.title"
+                              name="about.vision.title"
+                              defaultValue={content["about.vision.title"] || ""}
+                              placeholder="Our Vision"
+                              data-testid="about-vision-title"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="about.vision.description">Vision Description</Label>
+                            <Textarea
+                              id="about.vision.description"
+                              name="about.vision.description"
+                              defaultValue={content["about.vision.description"] || ""}
+                              placeholder="Your vision statement..."
+                              rows={4}
+                              data-testid="about-vision-description"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-ttrave-dark-gray">Values</h4>
+                          <div>
+                            <Label htmlFor="about.values.description.title">Values Title</Label>
+                            <Input
+                              id="about.values.description.title"
+                              name="about.values.description.title"
+                              defaultValue={content["about.values.description.title"] || ""}
+                              placeholder="Our Values"
+                              data-testid="about-values-description-title"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="about.values.description">Values Description</Label>
+                            <Textarea
+                              id="about.values.description"
+                              name="about.values.description"
+                              defaultValue={content["about.values.description"] || ""}
+                              placeholder="Your core values..."
+                              rows={4}
+                              data-testid="about-values-description"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </form>
               </div>
             )}

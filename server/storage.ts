@@ -91,6 +91,21 @@ export class MemStorage implements IStorage {
       { key: "social.twitter", value: "#" },
       { key: "inquiry.url", value: "https://forms.gle/your-inquiry-form-id" },
       { key: "inquiry.button.text", value: "Enquire Now" },
+      
+      // About page content
+      { key: "about.hero.title", value: "About TTravel Hospitality" },
+      { key: "about.hero.subtitle", value: "Your trusted partner for unforgettable travel experiences" },
+      { key: "about.who.title", value: "Who We Are" },
+      { key: "about.who.description1", value: "TTravel Hospitality is a premier travel agency dedicated to creating extraordinary travel experiences. With over a decade of expertise in the travel industry, we specialize in both domestic and international travel packages that cater to every traveler's dreams." },
+      { key: "about.who.description2", value: "Our team of experienced travel consultants works tirelessly to ensure that every journey you take with us is seamless, memorable, and perfectly tailored to your preferences. From cultural expeditions to adventure tours, we have something special for everyone." },
+      { key: "about.who.image", value: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop" },
+      { key: "about.values.title", value: "Our Core Values" },
+      { key: "about.mission.title", value: "Our Mission" },
+      { key: "about.mission.description", value: "To provide exceptional travel experiences that create lasting memories and foster cultural understanding through personalized service and attention to detail." },
+      { key: "about.vision.title", value: "Our Vision" },
+      { key: "about.vision.description", value: "To be the leading travel agency that connects people with the world's most beautiful destinations while promoting sustainable and responsible tourism practices." },
+      { key: "about.values.description.title", value: "Our Values" },
+      { key: "about.values.description", value: "Integrity, Excellence, Customer Focus, Innovation, and Sustainability guide every decision we make and every service we provide to our valued customers." },
     ];
 
     defaultContent.forEach(item => {
