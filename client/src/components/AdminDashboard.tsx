@@ -24,6 +24,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [editingDestination, setEditingDestination] = useState<any>(null);
   const [showAddDestination, setShowAddDestination] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [destinationPage, setDestinationPage] = useState(1);
+  const [packagePage, setPackagePage] = useState(1);
+  const itemsPerPage = 10;
   const [newDestination, setNewDestination] = useState({
     name: "",
     type: "domestic" as "domestic" | "international",
@@ -79,6 +82,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         description: "Logout successful",
       });
       onLogout();
+    },
+  });
+
+  const markSubmissionRespondedMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("PUT", `/api/admin/contact-submissions/${id}/mark-responded`),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Ticket marked as responded",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/contact-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
     },
   });
 
@@ -916,7 +931,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {destinations.slice(0, 5).map((destination: any) => (
+                          {destinations.slice((destinationPage - 1) * itemsPerPage, destinationPage * itemsPerPage).map((destination: any) => (
                             <tr key={destination.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {destination.name}
@@ -1238,7 +1253,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {packages.map((pkg: any) => (
+                          {packages.slice((packagePage - 1) * itemsPerPage, packagePage * itemsPerPage).map((pkg: any) => (
                             <tr key={pkg.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
@@ -1446,6 +1461,39 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Packages Pagination */}
+                {packages.length > itemsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPackagePage(Math.max(1, packagePage - 1))}
+                      disabled={packagePage === 1}
+                    >
+                      Previous
+                    </Button>
+                    {Array.from({ length: Math.ceil(packages.length / itemsPerPage) }, (_, i) => (
+                      <Button
+                        key={i + 1}
+                        variant={packagePage === i + 1 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPackagePage(i + 1)}
+                        className={packagePage === i + 1 ? "bg-ttrave-primary text-white" : ""}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPackagePage(Math.min(Math.ceil(packages.length / itemsPerPage), packagePage + 1))}
+                      disabled={packagePage === Math.ceil(packages.length / itemsPerPage)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1626,6 +1674,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                               <i className="bi bi-telephone me-2"></i>
                                               Call
                                             </Button>
+                                            {selectedSubmission.status !== 'responded' && (
+                                              <Button 
+                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                                onClick={() => {
+                                                  markSubmissionRespondedMutation.mutate(selectedSubmission.id);
+                                                  setSelectedSubmission(null);
+                                                }}
+                                                disabled={markSubmissionRespondedMutation.isPending}
+                                              >
+                                                <i className="bi bi-check-circle me-2"></i>
+                                                {markSubmissionRespondedMutation.isPending ? "Marking..." : "Mark as Responded"}
+                                              </Button>
+                                            )}
                                           </div>
                                         </div>
                                       </div>
@@ -1647,6 +1708,39 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Destinations Pagination */}
+                {destinations.length > itemsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDestinationPage(Math.max(1, destinationPage - 1))}
+                      disabled={destinationPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    {Array.from({ length: Math.ceil(destinations.length / itemsPerPage) }, (_, i) => (
+                      <Button
+                        key={i + 1}
+                        variant={destinationPage === i + 1 ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setDestinationPage(i + 1)}
+                        className={destinationPage === i + 1 ? "bg-ttrave-primary text-white" : ""}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDestinationPage(Math.min(Math.ceil(destinations.length / itemsPerPage), destinationPage + 1))}
+                      disabled={destinationPage === Math.ceil(destinations.length / itemsPerPage)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 

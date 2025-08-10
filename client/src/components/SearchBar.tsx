@@ -19,7 +19,7 @@ export default function SearchBar({ placeholder, value, onChange, onSearch }: Se
       <div className="relative">
         <Input
           type="text"
-          className="search-input"
+          className="search-input text-gray-900 placeholder-gray-500"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}

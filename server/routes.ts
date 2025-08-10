@@ -232,6 +232,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mark contact submission as responded
+  app.put("/api/admin/contact-submissions/:id/mark-responded", requireAuth, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updated = await storage.updateContactSubmissionStatus(id, "responded");
+      if (updated) {
+        res.json({ success: true, message: "Submission marked as responded" });
+      } else {
+        res.status(404).json({ message: "Submission not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
+
   app.get("/api/admin/newsletter-subscriptions", requireAuth, async (req, res) => {
     try {
       const subscriptions = await storage.getNewsletterSubscriptions();
