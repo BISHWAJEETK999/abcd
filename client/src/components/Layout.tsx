@@ -13,6 +13,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: content = {} } = useQuery<Record<string, string>>({
@@ -87,11 +88,33 @@ export default function Layout({ children }: LayoutProps) {
             {/* Mobile Menu Button */}
             <button
               className="md:hidden text-ttrave-primary"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-button"
             >
-              <i className="bi bi-list text-2xl"></i>
+              <i className={`bi ${mobileMenuOpen ? 'bi-x' : 'bi-list'} text-2xl`}></i>
             </button>
           </div>
+          
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden bg-white border-t border-gray-200 py-4">
+              <div className="flex flex-col space-y-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={`px-4 py-2 text-ttrave-dark-gray hover:text-ttrave-primary hover:bg-gray-50 transition-colors ${
+                      location === item.path ? "text-ttrave-primary bg-blue-50 border-r-2 border-ttrave-primary" : ""
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    data-testid={`mobile-nav-${item.label.toLowerCase()}`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 

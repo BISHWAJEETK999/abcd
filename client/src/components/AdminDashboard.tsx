@@ -23,6 +23,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState("content");
   const [editingDestination, setEditingDestination] = useState<any>(null);
   const [showAddDestination, setShowAddDestination] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
   const [newDestination, setNewDestination] = useState({
     name: "",
     type: "domestic" as "domestic" | "international",
@@ -1553,13 +1554,84 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 </Badge>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  data-testid={`view-submission-${submission.id}`}
-                                >
-                                  <i className="bi bi-eye"></i>
-                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => setSelectedSubmission(submission)}
+                                      data-testid={`view-submission-${submission.id}`}
+                                    >
+                                      <i className="bi bi-eye me-2"></i>
+                                      View
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Contact Form Submission Details</DialogTitle>
+                                    </DialogHeader>
+                                    {selectedSubmission && (
+                                      <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="font-semibold">Name</Label>
+                                            <p className="text-gray-700">{selectedSubmission.firstName} {selectedSubmission.lastName}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Email</Label>
+                                            <p className="text-gray-700">{selectedSubmission.email}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Phone</Label>
+                                            <p className="text-gray-700">{selectedSubmission.phone || "Not provided"}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Date</Label>
+                                            <p className="text-gray-700">{new Date(selectedSubmission.createdAt).toLocaleString()}</p>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <Label className="font-semibold">Subject</Label>
+                                          <p className="text-gray-700">{selectedSubmission.subject}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="font-semibold">Message</Label>
+                                          <div className="bg-gray-50 p-4 rounded-lg">
+                                            <p className="text-gray-700 whitespace-pre-wrap">{selectedSubmission.message}</p>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                          <div>
+                                            <Label className="font-semibold">Status</Label>
+                                            <Badge 
+                                              variant={selectedSubmission.status === 'responded' ? 'default' : 'secondary'}
+                                              className={selectedSubmission.status === 'responded' ? 'bg-green-100 text-green-800 ml-2' : 'bg-yellow-100 text-yellow-800 ml-2'}
+                                            >
+                                              {selectedSubmission.status}
+                                            </Badge>
+                                          </div>
+                                          <div className="space-x-2">
+                                            <Button 
+                                              variant="outline"
+                                              onClick={() => window.open(`mailto:${selectedSubmission.email}?subject=Re: ${selectedSubmission.subject}`, '_blank')}
+                                            >
+                                              <i className="bi bi-envelope me-2"></i>
+                                              Reply via Email
+                                            </Button>
+                                            <Button 
+                                              variant="outline"
+                                              onClick={() => window.open(`tel:${selectedSubmission.phone}`, '_blank')}
+                                              disabled={!selectedSubmission.phone}
+                                            >
+                                              <i className="bi bi-telephone me-2"></i>
+                                              Call
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
                               </td>
                             </tr>
                           ))}

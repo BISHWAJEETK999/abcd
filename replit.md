@@ -10,6 +10,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (January 2025)
 
+### Complete About Page Editability (January 2025)
+- **COMPLETED**: Made entire About page content editable from admin panel
+- Added dedicated "About Page" section in admin dashboard with user-friendly interface
+- All sections now editable: Hero titles, Who We Are content, Mission, Vision, Values
+- Added content management for section image URL in Who We Are section
+- Connected About page to dynamically display admin-managed content from database
+- Enhanced admin experience with organized form sections and clear labeling
+
+### Admin Panel and Mobile Navigation Improvements (January 2025)
+- **COMPLETED**: Fixed contact form submissions to be clickable with detailed modal views
+- Added comprehensive submission detail modal with full message display
+- Implemented direct reply via email and call functionality from admin panel
+- **COMPLETED**: Fixed mobile navigation menu functionality
+- Mobile hamburger menu now properly toggles and displays all navigation links
+- Added smooth transitions and proper styling for mobile menu
+- Users can now access Domestic and International pages on mobile devices
+
 ### Enhanced Gallery with Local File Upload (January 2025)
 - **COMPLETED**: Major gallery enhancement with local file upload capabilities
 - Added dual upload modes: local file upload with Base64 conversion + traditional URL upload
