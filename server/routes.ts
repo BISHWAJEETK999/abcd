@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDestinationSchema, insertContentSchema, insertContactSubmissionSchema, insertNewsletterSubscriptionSchema, insertPackageSchema } from "@shared/schema";
+import { insertDestinationSchema, insertContentSchema, insertContactSubmissionSchema, insertNewsletterSubscriptionSchema, insertPackageSchema, insertGalleryImageSchema } from "@shared/schema";
 import { z } from "zod";
 
 const adminAuthSchema = z.object({
@@ -346,6 +346,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Failed to delete package" });
+    }
+  });
+
+  // Gallery routes
+  app.get("/api/gallery", async (req, res) => {
+    try {
+      const images = await storage.getApprovedGalleryImages();
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch gallery images" });
+    }
+  });
+
+  app.post("/api/gallery", async (req, res) => {
+    try {
+      const imageData = insertGalleryImageSchema.parse(req.body);
+      const created = await storage.createGalleryImage(imageData);
+      res.json({ success: true, message: "Image uploaded successfully! It will be reviewed before appearing in the gallery.", image: created });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid image data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to upload image" });
+      }
+    }
+  });
+
+  // Admin gallery routes
+  app.get("/api/admin/gallery", requireAuth, async (req, res) => {
+    try {
+      const images = await storage.getGalleryImages();
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch gallery images" });
+    }
+  });
+
+  app.put("/api/admin/gallery/:id/approve", requireAuth, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const approved = await storage.approveGalleryImage(id);
+      
+      if (approved) {
+        res.json({ success: true, message: "Image approved successfully", image: approved });
+      } else {
+        res.status(404).json({ message: "Image not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve image" });
+    }
+  });
+
+  app.delete("/api/admin/gallery/:id", requireAuth, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const deleted = await storage.deleteGalleryImage(id);
+      
+      if (deleted) {
+        res.json({ success: true, message: "Image deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Image not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete image" });
     }
   });
 

@@ -66,6 +66,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     queryKey: ["/api/admin/packages"],
   });
 
+  const { data: galleryImages = [] } = useQuery<any[]>({
+    queryKey: ["/api/admin/gallery"],
+  });
+
   const logoutMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/auth/logout"),
     onSuccess: () => {
@@ -181,6 +185,32 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         description: "Package deleted successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/packages"] });
+    },
+  });
+
+  const approveImageMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequest("PUT", `/api/admin/gallery/${id}/approve`),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Image approved successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+    },
+  });
+
+  const deleteImageMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequest("DELETE", `/api/admin/gallery/${id}`),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     },
   });
 
@@ -309,6 +339,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 >
                   <i className="bi bi-box"></i>
                   <span>Travel Packages</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection("gallery")}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                    activeSection === "gallery" 
+                      ? "bg-ttrave-primary text-white" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  data-testid="admin-nav-gallery"
+                >
+                  <i className="bi bi-images"></i>
+                  <span>Gallery Management</span>
                 </button>
                 <button
                   onClick={() => setActiveSection("submissions")}
@@ -1317,6 +1359,100 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            )}
+
+            {/* Gallery Management Section */}
+            {activeSection === "gallery" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">Gallery Management</h2>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {galleryImages.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <i className="bi bi-images text-6xl text-gray-300 mb-4"></i>
+                        <h3 className="text-xl font-semibold text-gray-600 mb-2">No images submitted yet</h3>
+                        <p className="text-gray-500">Images will appear here when users submit them for review.</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-4">
+                      {galleryImages.map((image: any) => (
+                        <Card key={image.id} className={image.isApproved ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
+                          <CardContent className="p-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                              <div className="lg:col-span-1">
+                                <img
+                                  src={image.imageUrl}
+                                  alt={image.title}
+                                  className="w-full h-48 object-cover rounded-lg"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop";
+                                  }}
+                                />
+                              </div>
+                              <div className="lg:col-span-2">
+                                <div className="space-y-3">
+                                  <div>
+                                    <h3 className="text-lg font-semibold">{image.title}</h3>
+                                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                      <span>By {image.uploaderName}</span>
+                                      <span>•</span>
+                                      <span>{image.uploaderEmail}</span>
+                                    </div>
+                                  </div>
+                                  <p className="text-gray-700 text-sm">{image.review}</p>
+                                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>Submitted: {new Date(image.createdAt).toLocaleDateString()}</span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      image.isApproved 
+                                        ? "bg-green-100 text-green-800" 
+                                        : "bg-yellow-100 text-yellow-800"
+                                    }`}>
+                                      {image.isApproved ? "Approved" : "Pending Review"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="lg:col-span-1">
+                                <div className="flex flex-col space-y-2">
+                                  {!image.isApproved && (
+                                    <Button
+                                      onClick={() => approveImageMutation.mutate(image.id)}
+                                      disabled={approveImageMutation.isPending}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      size="sm"
+                                    >
+                                      <i className="bi bi-check-circle me-1"></i>
+                                      Approve
+                                    </Button>
+                                  )}
+                                  <Button
+                                    onClick={() => {
+                                      if (confirm("Are you sure you want to delete this image?")) {
+                                        deleteImageMutation.mutate(image.id);
+                                      }
+                                    }}
+                                    disabled={deleteImageMutation.isPending}
+                                    variant="destructive"
+                                    size="sm"
+                                  >
+                                    <i className="bi bi-trash me-1"></i>
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Destination, type InsertDestination, type Content, type InsertContent, type ContactSubmission, type InsertContactSubmission, type NewsletterSubscription, type InsertNewsletterSubscription, type Package, type InsertPackage } from "@shared/schema";
+import { type User, type InsertUser, type Destination, type InsertDestination, type Content, type InsertContent, type ContactSubmission, type InsertContactSubmission, type NewsletterSubscription, type InsertNewsletterSubscription, type Package, type InsertPackage, type GalleryImage, type InsertGalleryImage } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -37,6 +37,13 @@ export interface IStorage {
   createPackage(packageData: InsertPackage): Promise<Package>;
   updatePackage(id: string, packageData: Partial<InsertPackage>): Promise<Package | undefined>;
   deletePackage(id: string): Promise<boolean>;
+  
+  // Gallery Images
+  getGalleryImages(): Promise<GalleryImage[]>;
+  getApprovedGalleryImages(): Promise<GalleryImage[]>;
+  createGalleryImage(imageData: InsertGalleryImage): Promise<GalleryImage>;
+  approveGalleryImage(id: string): Promise<GalleryImage | undefined>;
+  deleteGalleryImage(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,6 +53,7 @@ export class MemStorage implements IStorage {
   private contactSubmissions: Map<string, ContactSubmission>;
   private newsletterSubscriptions: Map<string, NewsletterSubscription>;
   private packages: Map<string, Package>;
+  private galleryImages: Map<string, GalleryImage>;
 
   constructor() {
     this.users = new Map();
@@ -54,6 +62,7 @@ export class MemStorage implements IStorage {
     this.contactSubmissions = new Map();
     this.newsletterSubscriptions = new Map();
     this.packages = new Map();
+    this.galleryImages = new Map();
     
     this.initializeDefaultData();
   }
@@ -398,6 +407,42 @@ export class MemStorage implements IStorage {
     const updatedPackage = { ...packageData, isActive: false };
     this.packages.set(id, updatedPackage);
     return true;
+  }
+
+  // Gallery Image methods
+  async getGalleryImages(): Promise<GalleryImage[]> {
+    return Array.from(this.galleryImages.values());
+  }
+
+  async getApprovedGalleryImages(): Promise<GalleryImage[]> {
+    return Array.from(this.galleryImages.values()).filter(img => img.isApproved);
+  }
+
+  async createGalleryImage(imageData: InsertGalleryImage): Promise<GalleryImage> {
+    const id = randomUUID();
+    const galleryImage: GalleryImage = {
+      ...imageData,
+      id,
+      isApproved: false,
+      createdAt: new Date()
+    };
+    this.galleryImages.set(id, galleryImage);
+    return galleryImage;
+  }
+
+  async approveGalleryImage(id: string): Promise<GalleryImage | undefined> {
+    const galleryImage = this.galleryImages.get(id);
+    if (galleryImage) {
+      const updatedImage = { ...galleryImage, isApproved: true };
+      this.galleryImages.set(id, updatedImage);
+      return updatedImage;
+    }
+    return undefined;
+  }
+
+  async deleteGalleryImage(id: string): Promise<boolean> {
+    const deleted = this.galleryImages.delete(id);
+    return deleted;
   }
 }
 
