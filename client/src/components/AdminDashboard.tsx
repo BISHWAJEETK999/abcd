@@ -1424,25 +1424,24 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                     <Button
                                       onClick={() => approveImageMutation.mutate(image.id)}
                                       disabled={approveImageMutation.isPending}
-                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      className="btn-primary-ttrave"
                                       size="sm"
+                                      data-testid={`approve-image-${image.id}`}
                                     >
-                                      <i className="bi bi-check-circle me-1"></i>
-                                      Approve
+                                      <i className="bi bi-check-circle me-2"></i>
+                                      {approveImageMutation.isPending ? 'Approving...' : 'Approve'}
                                     </Button>
                                   )}
                                   <Button
-                                    onClick={() => {
-                                      if (confirm("Are you sure you want to delete this image?")) {
-                                        deleteImageMutation.mutate(image.id);
-                                      }
-                                    }}
+                                    onClick={() => deleteImageMutation.mutate(image.id)}
                                     disabled={deleteImageMutation.isPending}
-                                    variant="destructive"
+                                    variant="outline"
                                     size="sm"
+                                    className="text-red-600 hover:text-red-800"
+                                    data-testid={`delete-image-${image.id}`}
                                   >
-                                    <i className="bi bi-trash me-1"></i>
-                                    Delete
+                                    <i className="bi bi-trash me-2"></i>
+                                    {deleteImageMutation.isPending ? 'Deleting...' : 'Delete'}
                                   </Button>
                                 </div>
                               </div>
@@ -1450,6 +1449,32 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           </CardContent>
                         </Card>
                       ))}
+                      
+                      {/* Summary Stats */}
+                      <Card className="bg-gradient-to-r from-blue-50 to-green-50">
+                        <CardContent className="p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div>
+                              <div className="text-2xl font-bold text-blue-600">
+                                {galleryImages.length}
+                              </div>
+                              <div className="text-sm text-gray-600">Total Images</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-green-600">
+                                {galleryImages.filter((img: any) => img.isApproved).length}
+                              </div>
+                              <div className="text-sm text-gray-600">Approved</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-yellow-600">
+                                {galleryImages.filter((img: any) => !img.isApproved).length}
+                              </div>
+                              <div className="text-sm text-gray-600">Pending Review</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   )}
                 </div>

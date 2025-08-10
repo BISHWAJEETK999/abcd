@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Hero from "@/components/Hero";
+import { Progress } from "@/components/ui/progress";
 
 interface GalleryImage {
   id: string;
@@ -25,6 +26,12 @@ export default function Gallery() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadData, setUploadData] = useState({
     imageUrl: "",
     title: "",
@@ -44,14 +51,7 @@ export default function Gallery() {
         title: "Success!",
         description: "Your image has been submitted for review. It will appear in the gallery once approved.",
       });
-      setShowUploadForm(false);
-      setUploadData({
-        imageUrl: "",
-        title: "",
-        review: "",
-        uploaderName: "",
-        uploaderEmail: "",
-      });
+      resetForm();
       queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     },
     onError: () => {
@@ -60,23 +60,106 @@ export default function Gallery() {
         description: "Failed to upload image. Please try again.",
         variant: "destructive",
       });
+      setUploadProgress(0);
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate image URL
-    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-    if (!urlPattern.test(uploadData.imageUrl)) {
+  const resetForm = () => {
+    setShowUploadForm(false);
+    setUploadData({
+      imageUrl: "",
+      title: "",
+      review: "",
+      uploaderName: "",
+      uploaderEmail: "",
+    });
+    setSelectedFile(null);
+    setImagePreview(null);
+    setUploadProgress(0);
+    setIsProcessingImage(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
       toast({
-        title: "Invalid URL",
-        description: "Please enter a valid image URL",
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, GIF, etc.)",
         variant: "destructive",
       });
       return;
     }
 
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setIsProcessingImage(true);
+
+    // Create preview and convert to base64
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string;
+      setImagePreview(base64String);
+      setUploadData(prev => ({
+        ...prev,
+        imageUrl: base64String
+      }));
+      setIsProcessingImage(false);
+    };
+
+    reader.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to process image. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessingImage(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (uploadMode === 'url') {
+      // Validate image URL
+      const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+      if (!urlPattern.test(uploadData.imageUrl)) {
+        toast({
+          title: "Invalid URL",
+          description: "Please enter a valid image URL",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Validate file upload
+      if (!uploadData.imageUrl) {
+        toast({
+          title: "No image selected",
+          description: "Please select an image file to upload",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    setUploadProgress(25);
     uploadMutation.mutate(uploadData);
   };
 
@@ -119,27 +202,120 @@ export default function Gallery() {
                     Share Your Travel Photo
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Upload Your Travel Photo</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="imageUrl" className="text-gray-700">
-                        Image URL *
-                      </Label>
-                      <Input
-                        id="imageUrl"
-                        type="url"
-                        value={uploadData.imageUrl}
-                        onChange={handleChange}
-                        placeholder="https://example.com/your-image.jpg"
-                        required
-                        data-testid="upload-image-url"
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Upload your image to a service like Imgur, Google Drive, or Dropbox and paste the direct link here
-                      </p>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Upload Mode Toggle */}
+                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">Upload method:</span>
+                      <div className="flex space-x-2">
+                        <Button
+                          type="button"
+                          variant={uploadMode === 'file' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setUploadMode('file')}
+                          className={uploadMode === 'file' ? 'btn-primary-ttrave' : ''}
+                        >
+                          <i className="bi bi-upload me-2"></i>
+                          Upload File
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={uploadMode === 'url' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setUploadMode('url')}
+                          className={uploadMode === 'url' ? 'btn-primary-ttrave' : ''}
+                        >
+                          <i className="bi bi-link-45deg me-2"></i>
+                          Image URL
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Image Upload Section */}
+                    <div className="space-y-4">
+                      {uploadMode === 'file' ? (
+                        <div>
+                          <Label className="text-gray-700 block mb-2">
+                            Select Image File *
+                          </Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-ttrave-primary transition-colors">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                              className="hidden"
+                              data-testid="upload-file-input"
+                            />
+                            {!imagePreview ? (
+                              <div>
+                                <i className="bi bi-cloud-upload text-4xl text-gray-400 mb-3"></i>
+                                <p className="text-gray-600 mb-2">
+                                  Drag and drop your image here, or click to select
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  disabled={isProcessingImage}
+                                  data-testid="select-file-button"
+                                >
+                                  {isProcessingImage ? 'Processing...' : 'Choose Image'}
+                                </Button>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Supports JPG, PNG, GIF up to 5MB
+                                </p>
+                              </div>
+                            ) : (
+                              <div>
+                                <img
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  className="max-w-full h-48 mx-auto object-cover rounded-lg mb-3"
+                                />
+                                <p className="text-sm text-gray-600 mb-2">
+                                  {selectedFile?.name} ({(selectedFile?.size! / 1024).toFixed(1)} KB)
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setImagePreview(null);
+                                    setSelectedFile(null);
+                                    setUploadData(prev => ({ ...prev, imageUrl: '' }));
+                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                  }}
+                                >
+                                  Change Image
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <Label htmlFor="imageUrl" className="text-gray-700">
+                            Image URL *
+                          </Label>
+                          <Input
+                            id="imageUrl"
+                            type="url"
+                            value={uploadData.imageUrl}
+                            onChange={handleChange}
+                            placeholder="https://example.com/your-image.jpg"
+                            required={uploadMode === 'url'}
+                            data-testid="upload-image-url"
+                          />
+                          <p className="text-sm text-gray-500 mt-1">
+                            Paste a direct link to your image from any online source
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="title" className="text-gray-700">
@@ -197,20 +373,34 @@ export default function Gallery() {
                         />
                       </div>
                     </div>
-                    <div className="flex space-x-2">
+                    {/* Upload Progress */}
+                    {uploadProgress > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Uploading...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <Progress value={uploadProgress} className="w-full" />
+                      </div>
+                    )}
+
+                    <div className="flex space-x-2 pt-4">
                       <Button
                         type="submit"
                         className="btn-primary-ttrave flex-1"
-                        disabled={uploadMutation.isPending}
+                        disabled={uploadMutation.isPending || isProcessingImage || (uploadMode === 'file' && !uploadData.imageUrl)}
                         data-testid="upload-submit-button"
                       >
-                        {uploadMutation.isPending ? "Uploading..." : "Submit for Review"}
+                        {uploadMutation.isPending ? "Uploading..." : 
+                         isProcessingImage ? "Processing..." : 
+                         "Submit for Review"}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setShowUploadForm(false)}
+                        onClick={resetForm}
                         className="flex-1"
+                        disabled={uploadMutation.isPending}
                       >
                         Cancel
                       </Button>
