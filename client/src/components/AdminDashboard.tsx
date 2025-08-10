@@ -27,6 +27,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [destinationPage, setDestinationPage] = useState(1);
   const [packagePage, setPackagePage] = useState(1);
   const itemsPerPage = 10;
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
   const [newDestination, setNewDestination] = useState({
     name: "",
     type: "domestic" as "domestic" | "international",
@@ -94,6 +100,26 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contact-submissions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+    },
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) => 
+      apiRequest("PUT", "/api/admin/change-password", data),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+      setShowPasswordChange(false);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
     },
   });
 
@@ -391,6 +417,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 >
                   <i className="bi bi-chat-dots"></i>
                   <span>Form Submissions</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection("about")}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                    activeSection === "about" 
+                      ? "bg-ttrave-primary text-white" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  data-testid="admin-nav-about"
+                >
+                  <i className="bi bi-info-circle"></i>
+                  <span>About Page</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection("settings")}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                    activeSection === "settings" 
+                      ? "bg-ttrave-primary text-white" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  data-testid="admin-nav-settings"
+                >
+                  <i className="bi bi-gear"></i>
+                  <span>Settings</span>
                 </button>
                 <button
                   onClick={handleLogout}
@@ -1900,6 +1950,88 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Settings */}
+            {activeSection === "settings" && (
+              <div className="admin-content">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="font-poppins text-2xl font-semibold">Settings</h2>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Change Admin Password</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4 max-w-md">
+                      <div>
+                        <Label htmlFor="current-password">Current Password</Label>
+                        <Input
+                          id="current-password"
+                          type="password"
+                          placeholder="Enter current password"
+                          value={passwordForm.currentPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                          data-testid="current-password"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new-password">New Password</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          placeholder="Enter new password"
+                          value={passwordForm.newPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                          data-testid="new-password"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="confirm-password">Confirm New Password</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          placeholder="Confirm new password"
+                          value={passwordForm.confirmPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                          data-testid="confirm-password"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                            toast({
+                              title: "Error",
+                              description: "New passwords do not match",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          if (passwordForm.newPassword.length < 6) {
+                            toast({
+                              title: "Error",
+                              description: "Password must be at least 6 characters long",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          changePasswordMutation.mutate({
+                            currentPassword: passwordForm.currentPassword,
+                            newPassword: passwordForm.newPassword,
+                          });
+                        }}
+                        disabled={changePasswordMutation.isPending || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}
+                        className="btn-primary-ttrave"
+                        data-testid="change-password-button"
+                      >
+                        <i className="bi bi-key me-2"></i>
+                        {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>

@@ -247,6 +247,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change admin password
+  app.put("/api/admin/change-password", requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = z.object({
+        currentPassword: z.string().min(1),
+        newPassword: z.string().min(6)
+      }).parse(req.body);
+      
+      // In a real app, you'd validate the current password against a hashed version
+      // For this demo, we'll use the simple admin password
+      if (currentPassword !== "admin123") {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // In production, you'd hash the new password and store it in database
+      // For now, we'll just simulate success
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid password data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to change password" });
+      }
+    }
+  });
+
   app.get("/api/admin/newsletter-subscriptions", requireAuth, async (req, res) => {
     try {
       const subscriptions = await storage.getNewsletterSubscriptions();

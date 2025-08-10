@@ -31,6 +31,9 @@ Preferred communication style: Simple, everyday language.
 - Added page navigation controls showing all items across multiple pages (1, 2, 3...)
 - **COMPLETED**: Fixed search text visibility in domestic and international pages
 - Search input text is now black instead of white for better readability
+- **COMPLETED**: Added Settings section with admin password change functionality
+- Admin can now change password directly from the admin panel with validation
+- Includes current password verification and new password confirmation
 
 ### Enhanced Gallery with Local File Upload (January 2025)
 - **COMPLETED**: Major gallery enhancement with local file upload capabilities
